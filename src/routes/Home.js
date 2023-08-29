@@ -1,3 +1,37 @@
-const Home = () => <span>Home</span>;
+import { useState, useEffect } from "react";
+import { dbService, storageService} from "fbase";
+import Nweet from "componets/Nweet";
+import NweetFactory from "componets/NweetFactory";
 
-export default Home; 
+const Home = ({userObj}) => {
+
+    const [nweets, setNweets] = useState([]);
+
+
+    useEffect(() => {
+      dbService.collection("nweets").onSnapshot((snapshot) =>{
+        const newArray = snapshot.docs.map((document) => ({
+            id: document.id,
+            ...document.data(),
+        }));
+        setNweets(newArray);
+      })
+    }, []);
+
+
+
+    return (
+        <>
+            <NweetFactory userObj={userObj}/>
+            <div>
+                {nweets.map((nweet) =>(
+                    <Nweet key={nweet.id} nweetObj={nweet}
+                    isOwner={nweet.creatorId === userObj.uid}
+                    />
+                ))}
+            </div>
+        </>
+    )
+};
+
+export default Home;
